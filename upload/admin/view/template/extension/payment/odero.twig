@@ -1,0 +1,300 @@
+{{ header }}{{ column_left }}
+<div id="content">
+    <ul class="breadcrumb">
+        {% for breadcrumb in breadcrumbs %}
+            <li><a href="{{ breadcrumb.href }}">{{ breadcrumb.text }}</a></li>
+        {% endfor %}
+    </ul>
+    <div class="page-header">
+        <div class="container-fluid">
+            <div class="pull-right">
+                <button type="submit" form="form-payment" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+                <a href="{{ cancel }}" data-toggle="tooltip" title="{{ button_cancel }}" class="btn btn-default"><i class="fa fa-reply"></i></a></div>
+            <h1><i class="fa fa-credit-card"></i> {{ heading_title }}</h1>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="panel-body">
+            <form action="{{ action }}" method="post" enctype="multipart/form-data" id="form-payment" onsubmit="return getApiValid()" class="form-horizontal">
+                <ul class="nav nav-tabs">
+                    {% if install_status %}
+                        <li class="active"><a href="#tab-general" data-toggle="tab">{{settings}}</a></li>
+                    {% else  %}
+                        <li class="active"><a href="#tab-general" data-toggle="tab">{{install}}</a></li>
+                    {% endif %}
+
+                    <li><a href="#tab-odero-webhook" data-toggle="tab">{{odero_webhook}}</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane active" id="tab-general">
+                        {% if install_status %}
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">Odero - opencart3x {{ module_version }}v</div>
+                                <div class="panel-body">
+                                    {{install_hello}} {{ firstname }}, {{settings_content}}
+                                    <br>
+                                    {% if api_status  %}
+                                        <strong>{{api_connection}}</strong> <strong style="color:green;">{{api_connection_success}}</strong>
+                                        <br>
+                                    {% else  %}
+                                        <strong>{{api_connection}}</strong> <strong style="color:red;">{{api_connection_failed}}</strong>
+                                        <br>
+                                        {{api_connection_failed_content}} <a href="mailto:entegrasyon@odero.com">{{support}}</a>
+                                        <br>
+                                    {% endif  %}
+                                    {% if odero_webhook_url_key %}
+                                        <strong>Webhook URL: </strong> {{odero_webhook_url}}
+                                        <br>
+                                        {{ webhook_url_description }}
+                                    {% else  %}
+                                        <strong style="color:red;">{{ odero_webhook_url_key_error  }} </strong>
+                                        <br>
+                                        <strong>Webhook URL: </strong> {{odero_webhook_url}}
+                                    {% endif  %}
+                                </div>
+                            </div>
+                        {% else  %}
+                            <div class="panel panel-primary">
+                                <div class="alert alert-danger" role="alert">
+                                    <h1>{{ pwi_status_error }}</h1>
+                                    <span>{{ pwi_status_error_detail }}</span>
+                                </div>
+                            </div>
+                        {% endif %}
+
+                        <div class="panel panel-primary">
+                            <div class="panel-body">
+                                <div class="form-group required">
+                                    <label class="col-sm-2 control-label" for="test">{{ api_field }}
+                                        <span data-toggle="tooltip" title="{{ api_field_tooltip }}"></span>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control" id="api_channel" name="payment_odero_api_channel">
+                                            {% if payment_odero_api_channel == 'live'  %}
+                                                <option value="live" selected="selected">{{ live }}</option>
+                                                <option value="sandbox">{{ sandbox }}</option>
+                                            {% elseif payment_odero_api_channel == 'sandbox' %}
+                                                <option value="live">{{ live }}</option>
+                                                <option value="sandbox"  selected="selected">{{ sandbox }}</option>
+                                            {% else   %}
+                                                <option value="live">{{ live }}</option>
+                                                <option value="sandbox">{{ sandbox }}</option>
+                                            {%  endif %}
+                                        </select>
+                                        {% if error_api_channel %}
+                                            <div class="text-danger">{{ error_api_channel }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group required">
+                                    <label class="col-sm-2 control-label"  for="test">Merchant ID
+                                        <span data-toggle="tooltip" title="{{ apikey_field_tooltip }}"></span>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" id="api_key" value="{{payment_odero_merchant_id}}" name="payment_odero_merchant_id" placeholder="Merchant ID" />
+                                        {% if error_api_key %}
+                                            <div class="text-danger">{{ error_api_key }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group required">
+                                    <label class="col-sm-2 control-label" for="test">Token
+                                        <span data-toggle="tooltip" title="{{ secretkey_field_tooltip }}"></span>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <input type="text" class="form-control" id="secret_key" value="{{payment_odero_merchant_token}}" name="payment_odero_merchant_token" placeholder="{{ secret_key }}" />
+                                        {% if error_secret_key %}
+                                            <div class="text-danger">{{ error_secret_key }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label"  for="test">{{ payment_title }}
+                                        <span data-toggle="tooltip" title="{{ payment_title_tooltip }}"></span>
+
+                                    </label>
+                                    <div class="col-sm-10">
+                                        {% if payment_odero_title %}
+                                            <input type="text" class="form-control"  value="{{payment_odero_title}}" name="payment_odero_title" placeholder="{{ payment_title }}" />
+                                        {% else %}
+                                            <input type="text" class="form-control"  value="en=Credit and Bank Debit|ro=Credit and Bank Debit" name="payment_odero_title" placeholder="{{ payment_title }}" />
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group required">
+                                    <label class="col-sm-2 control-label" for="test">{{order_status}}
+                                        <span data-toggle="tooltip" title="{{ order_status_tooltip }}"></span>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control" name="payment_odero_order_status">
+                                            {% for order_status in order_statuses %}
+                                                {% if order_status.order_status_id == payment_odero_order_status %}
+                                                    <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                {% else %}
+                                                    {% if payment_odero_order_status == false and order_status.order_status_id == 5  %}
+                                                        <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                    {% endif %}
+                                                    <option value="{{ order_status.order_status_id }}" >{{ order_status.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        {% if error_order_status %}
+                                            <div class="text-danger">{{ error_order_status }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group required">
+                                    <label class="col-sm-2 control-label" for="test">{{order_refund_status}}
+                                        <span data-toggle="tooltip" title="{{ order_refund_status_tooltip }}"></span>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control" name="payment_odero_order_refund_status">
+                                            {% for order_status in order_statuses %}
+                                                {% if order_status.order_status_id == payment_odero_order_refund_status %}
+                                                    <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                {% else %}
+                                                    {% if payment_odero_order_status == false and order_status.order_status_id == 5  %}
+                                                        <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                    {% endif %}
+                                                    <option value="{{ order_status.order_status_id }}" >{{ order_status.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        {% if error_order_status %}
+                                            <div class="text-danger">{{ error_order_status }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group required">
+                                    <label class="col-sm-2 control-label" for="test">{{order_reverse_status}}
+                                        <span data-toggle="tooltip" title="{{ order_reverse_status_tooltip }}"></span>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control" name="payment_odero_order_reverse_status">
+                                            {% for order_status in order_statuses %}
+                                                {% if order_status.order_status_id == payment_odero_order_reverse_status %}
+                                                    <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                {% else %}
+                                                    {% if payment_odero_order_status == false and order_status.order_status_id == 5  %}
+                                                        <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                    {% endif %}
+                                                    <option value="{{ order_status.order_status_id }}" >{{ order_status.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        {% if error_order_status %}
+                                            <div class="text-danger">{{ error_order_status }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group required">
+                                    <label class="col-sm-2 control-label" for="test">{{cancel_order_status}}
+                                        <span data-toggle="tooltip" title="{{ cancel_order_status_tooltip }}"></span>
+                                    </label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control" name="payment_odero_order_cancel_status">
+                                            {% for order_status in order_statuses %}
+                                                {% if order_status.order_status_id == payment_odero_order_cancel_status %}
+                                                    <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                {% else %}
+                                                    {% if payment_odero_order_status == false and order_status.order_status_id == 7  %}
+                                                        <option value="{{ order_status.order_status_id }}" selected="selected">{{ order_status.name }}</option>
+                                                    {% endif %}
+                                                    <option value="{{ order_status.order_status_id }}">{{ order_status.name }}</option>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </select>
+                                        {% if error_cancel_order_status %}
+                                            <div class="text-danger">{{ error_cancel_order_status }}</div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="test">{{ extension_status }}</label>
+                                    <div class="col-sm-10">
+                                        <select class="form-control" name="payment_odero_status">
+                                            <option value="">{{ general_select }}</option>
+                                            {% if payment_odero_status == 1 %}
+                                                <option value="1" selected="selected">{{ text_enabled }}</option>
+                                                <option value="0">{{text_disabled}}</option>
+                                            {% else %}
+                                                <option value="1" >{{ text_enabled }}</option>
+                                                <option value="0" selected="selected">{{text_disabled}}</option>
+                                            {% endif %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="col-sm-2 control-label" for="input-order-status">{{ sort_order  }}</label>
+                                    <div class="col-sm-10">
+                                        <input type="text" name="payment_odero_sort_order" value="{{payment_odero_sort_order}}" placeholder="{{ sort_order}}" size="1" class="form-control"/>
+                                    </div>
+                                </div>
+                                <button style="float:right;" type="submit" form="form-payment" data-toggle="tooltip" title="{{ button_save }}" class="btn btn-primary"><i class="fa fa-save"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="tab-pane" id="tab-odero-webhook">
+                        <div class="col-sm-12">
+                                <h1>Odero Opencart Webhooks</h1>
+                                <p><strong>When a payment attemt is made, it is possible to receive the transaction result via notification.</strong></p>
+                                <p>In order to activate the webhooks in Opencart, you need to follow the steps below.</p>
+
+                                <h1>Webhook Integration Steps</h1>
+                                <ol>
+                                    <li>Copy webhook URL below.</li>
+                                    <li>Sing in to  <a href="https://merchant.odero.com/" target="_blank">(https://merchant.odero.ro/)</a> and click  Settings->Merchant Settings on left panel.</li>
+                                    <li>Find merchant notifications area in the page, paste webhook URL to merchant notification url.</li>
+                                    <li>Turn on Receive notifications for payments button.</li>
+                                    <li>Save Settings.</li>
+                                </ol>
+                            <h1>Webhook URL</h1>
+                            {% if odero_webhook_url_key %}
+                                {{odero_webhook_url}}
+                                <br>
+                            {% else  %}
+                                <strong style="color:red;">{{ odero_webhook_url_key_error  }} </strong>
+                            {% endif  %}
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+<script>
+    var acc = document.getElementsByClassName("accordionBox");
+    var i;
+
+    for (i = 0; i < acc.length; i++) {
+        acc[i].addEventListener("click", function() {
+            this.classList.toggle("active");
+            var panel = this.nextElementSibling;
+            if (panel.style.display === "block") {
+                panel.style.display = "none";
+            } else {
+                panel.style.display = "block";
+            }
+        });
+    }
+
+    function getApiValid() {
+        var e, n, t;
+        return event.preventDefault(), e = document.getElementById("api_channel").value, n = document.getElementById("api_key").value, t = document.getElementById("api_key").value, "live" == e ? l(n, t) : "sandbox" == e ? s(n, t) : (alert("Geçersiz istek."), !1)
+    }
+
+    function l(e, n) {
+        if ("sandbox-" == e.substring(0, 8) || "sandbox-" == n.substring(0, 8)) return alert("{{valid_live}}"), !1
+    }
+
+    function s(e, n) {
+        if ("sandbox-" != e.substring(0, 8) || "sandbox-" != n.substring(0, 8)) return alert("{{valid_sandbox}}"), !1
+    }
+
+</script>
+<style>
+    .panelBox p {
+        padding-left: 40px;
+    }
+</style>
+{{ footer }}
